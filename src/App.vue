@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import HelloWorld from './components/HelloWorld.vue'
-console.warn('pop page')
+// console.warn('pop page')
 
 console.warn(document.querySelector('.air3-badge-tagline'))
 // 获取第一个匹配的 DOM 元素
