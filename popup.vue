@@ -17,28 +17,25 @@
     {{ state.action }}
   </p>
   <a href="https://docs.plasmo.com" target="_blank"> View Docs </a>
+  <!-- <button
+    type="button"
+    class="flex flex-row items-center px-4 py-2 text-sm rounded-lg transition-all border-none shadow-lg hover:shadow-md active:scale-105 bg-slate-50 hover:bg-red-600">
+    Count:
+    <span
+      class="inline-flex items-center justify-center w-8 h-4 ml-2 text-xs font-semibold rounded-full">
+      18
+    </span>
+  </button> -->
+  <h1 class="text-3xl font-bold underline bg-red-400">Title</h1>
 </template>
 
-<style>
-.container {
-  min-width: 470px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 47px;
-}
-.text-center {
-  text-align: center;
-}
-.action {
-  color: #470;
-  font-weight: bold;
-}
-</style>
+<style></style>
 
 <script setup lang="ts">
 import { reactive } from "vue"
 import type { App } from "vue"
+
+import "./styles.css"
 
 const state = reactive({ count: 0, action: null })
 
