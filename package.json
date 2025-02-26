@@ -1,23 +1,28 @@
 {
-  "name": "upworkassistant",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "upwork-assistant",
+  "displayName": "Upwork assistant",
+  "version": "0.0.1",
+  "description": "It’s an Upwork Assistant designed to help me apply for jobs more efficiently. It’s a Chrome Extension.",
+  "author": "Austin",
   "scripts": {
-    "dev": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.0.7",
-    "tailwindcss": "^4.0.7",
-    "vue": "^3.5.13"
+    "plasmo": "0.90.3",
+    "vue": "3.4.15"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vue/tsconfig": "^0.7.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.1.0",
-    "vue-tsc": "^2.2.0"
+    "@ianvs/prettier-plugin-sort-imports": "4.1.1",
+    "@types/chrome": "0.0.258",
+    "@types/node": "20.11.5",
+    "prettier": "3.2.4",
+    "typescript": "5.3.3"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://*/*"
+    ]
   }
 }
