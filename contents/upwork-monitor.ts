@@ -1,41 +1,33 @@
 import type { PlasmoCSConfig } from "plasmo"
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://www.upwork.com/*"]
+  matches: ["https://www.upwork.com/*"],
+  all_frames: true
 }
 
-// 创建一个MutationObserver来监听DOM变化
-const observer = new MutationObserver((mutations) => {
-    console.log("MutationObserver触发", mutations.length, "个变化");
+let observer: MutationObserver | null = null;
 
-    mutations.forEach((mutation) => {
-        console.log("mutation类型:", mutation.type);
-        console.log("新增节点数量:", mutation.addedNodes.length);
+// 创建一个防抖函数来避免过多的检查
+function debounce(func: Function, wait: number) {
+    let timeout: number;
+    return function executedFunction(...args: any[]) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = window.setTimeout(later, wait);
+    };
+}
 
-        // 检查新增的节点
-        mutation.addedNodes.forEach((node) => {
-            console.log("检查节点:", node);
-
-            // 检查当前节点
-            if (node instanceof Element) {
-                console.log("是Element节点，检查当前节点");
-                if (node.classList.contains('air3-slider-content') && node.getAttribute('modaltitle') === "Job Details") {
-                    console.log("直接匹配到slider!");
-                    showNotification();
-                    return;
-                }
-            }
-
-            // 在整个文档中查找
-            const sliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
-            console.log("找到的sliders数量:", sliders.length);
-            if (sliders.length > 0) {
-                console.log("找到slider!");
-                showNotification();
-            }
-        });
-    });
-});
+// 检查slider的函数
+const checkForSlider = debounce(() => {
+    const sliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
+    if (sliders.length > 0) {
+        console.log("找到slider!");
+        showNotification();
+    }
+}, 500);
 
 function showNotification() {
     console.log("准备显示通知");
@@ -57,29 +49,73 @@ function showNotification() {
 }
 
 // 配置观察选项
-const observerConfig = {
-    childList: true, // 观察目标子节点的变化
-    subtree: true, // 观察所有后代节点
-    attributes: true, // 观察属性变化
-    characterData: true // 观察节点内容或文本变化
+const observerConfig: MutationObserverInit = {
+    childList: true,
+    subtree: true,
+    attributes: true
 };
 
-// 初始化函数
-function init() {
-    console.log("Upwork Monitor 初始化");
+// 创建观察者
+function createObserver() {
+    if (observer) {
+        observer.disconnect();
+    }
 
-    // 检查是否已经存在slider
-    const existingSliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
-    console.log("初始化时找到的sliders数量:", existingSliders.length);
+    observer = new MutationObserver((mutations) => {
+        let shouldCheck = false;
 
-    // 开始观察整个document
+        for (const mutation of mutations) {
+            // 如果是节点添加
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                shouldCheck = true;
+                break;
+            }
+            // 如果是属性变化，且是相关属性
+            if (mutation.type === 'attributes' &&
+                mutation.target instanceof Element &&
+                (mutation.attributeName === 'class' || mutation.attributeName === 'modaltitle')) {
+                shouldCheck = true;
+                break;
+            }
+        }
+
+        if (shouldCheck) {
+            checkForSlider();
+        }
+    });
+
     observer.observe(document.body, observerConfig);
     console.log("Observer已启动");
 }
 
-// 确保DOM加载完成后再初始化
+// 初始化函数
+function init() {
+    console.log("Upwork Monitor 初始化");
+    createObserver();
+
+    // 初始检查
+    checkForSlider();
+}
+
+// 页面加载完成后初始化
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
 } else {
     init();
 }
+
+// 处理页面可见性变化
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        console.log("页面变为可见，重新初始化observer");
+        init();
+    }
+});
+
+// 确保在页面卸载时清理observer
+window.addEventListener('unload', () => {
+    if (observer) {
+        observer.disconnect();
+        observer = null;
+    }
+});
