@@ -6,6 +6,7 @@ export const config: PlasmoCSConfig = {
 }
 
 let observer: MutationObserver | null = null;
+let isSliderOpen = false;  // 添加状态标记
 
 // 创建一个防抖函数来避免过多的检查
 function debounce(func: Function, wait: number) {
@@ -93,6 +94,8 @@ function createInfoCard(container: Element) {
         margin-bottom: 16px;
         font-family: 'Neue Montreal', sans-serif;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        width: 80%;
+        margin: 0 auto;
     `;
 
     // 设置卡片内容
@@ -143,9 +146,15 @@ function createInfoCard(container: Element) {
 
 // 检查slider的函数
 const checkForSlider = debounce(() => {
+    // 如果slider已经打开，不需要检查
+    if (isSliderOpen) {
+        return;
+    }
+
     const sliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
     if (sliders.length > 0) {
         console.log("找到slider!");
+        isSliderOpen = true;  // 标记slider已打开
         showNotification();
 
         // 为每个找到的slider添加信息卡片
@@ -158,9 +167,51 @@ const checkForSlider = debounce(() => {
                     createInfoCard(slider);
                 }, 1000);
             }
+
+            // 监听关闭按钮的点击事件
+            const closeButton = slider.querySelector('[data-test="slider-close-mobile"]');
+            if (closeButton) {
+                // 移除旧的事件监听器（如果存在）
+                closeButton.removeEventListener('click', handleSliderClose);
+                // 添加新的事件监听器
+                closeButton.addEventListener('click', handleSliderClose);
+            }
+
+            // 监听返回按钮的点击事件
+            const backButton = slider.querySelector('.air3-slider-prev-btn');
+            if (backButton) {
+                backButton.removeEventListener('click', handleSliderClose);
+                backButton.addEventListener('click', handleSliderClose);
+            }
         });
+
+        // 暂停DOM监听
+        if (observer) {
+            console.log("暂停DOM监听");
+            observer.disconnect();
+        }
     }
 }, 500);
+
+// 处理slider关闭的函数
+function handleSliderClose() {
+    console.log("Slider已关闭");
+    isSliderOpen = false;  // 重置状态
+
+    // 移除可能存在的旧卡片
+    const oldCards = document.querySelectorAll('.job-info-card');
+    oldCards.forEach(card => card.remove());
+
+    // 重新开始监听
+    setTimeout(() => {
+        if (!observer) {
+            createObserver();
+        } else {
+            observer.observe(document.body, observerConfig);
+        }
+        console.log("恢复DOM监听");
+    }, 500); // 延迟500ms后恢复监听，确保DOM已更新
+}
 
 function showNotification() {
     console.log("准备显示通知");
@@ -195,11 +246,16 @@ function createObserver() {
     }
 
     observer = new MutationObserver((mutations) => {
+        // 如果slider已经打开，不需要处理mutations
+        if (isSliderOpen) {
+            return;
+        }
+
         let shouldCheck = false;
 
         for (const mutation of mutations) {
-            // 如果是节点添加
-            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            // 如果是节点添加或移除
+            if (mutation.type === 'childList') {
                 shouldCheck = true;
                 break;
             }
@@ -213,6 +269,11 @@ function createObserver() {
         }
 
         if (shouldCheck) {
+            // 检查slider是否真的已经关闭
+            const existingSlider = document.querySelector('.air3-slider-content[modaltitle="Job Details"]');
+            if (!existingSlider) {
+                isSliderOpen = false;
+            }
             checkForSlider();
         }
     });
