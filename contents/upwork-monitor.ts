@@ -73,6 +73,14 @@ function createInfoCard(container: Element) {
         hireRate: `${hireRate}%`
     };
 
+    // 检查是否所有重要信息都已获取
+    if (budget === '预算未知' && proposals === '未知' && totalSpent === '未知') {
+        console.log('重要信息未加载完成，将重试...');
+        // 如果重要信息都未获取到，再等待1秒后重试
+        setTimeout(() => createInfoCard(container), 1000);
+        return;
+    }
+
     console.log('提取的工作信息:', jobInfo);
 
     // 创建卡片元素
@@ -98,9 +106,8 @@ function createInfoCard(container: Element) {
                 <span style="font-weight: 500;">&#128202; 投标情况:</span>
                 <span>
                     <span style="margin-right: 12px;">总数: ${jobInfo.proposals}</span>
-                    <span>已邀请: ${jobInfo.invitesSent}</span>
                     <span style="margin-right: 12px;">面试中: ${jobInfo.interviewing}</span>
-
+                    <span>已邀请: ${jobInfo.invitesSent}</span>
                 </span>
             </div>
 
@@ -145,7 +152,11 @@ const checkForSlider = debounce(() => {
         sliders.forEach(slider => {
             // 确保卡片只添加一次
             if (!slider.querySelector('.job-info-card')) {
-                createInfoCard(slider);
+                // 延迟1秒后获取信息并创建卡片
+                setTimeout(() => {
+                    console.log("开始获取工作信息...");
+                    createInfoCard(slider);
+                }, 1000);
             }
         });
     }
