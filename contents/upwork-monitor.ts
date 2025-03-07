@@ -22,25 +22,38 @@ function debounce(func: Function, wait: number) {
 
 // 创建信息卡片
 function createInfoCard(container: Element) {
-    // 获取重要信息
-    const jobDetails = container.querySelector('[data-test="job-details-section"]');
-    const proposalSection = container.querySelector('[data-test="proposals-section"]');
-    const clientSection = container.querySelector('[data-test="client-info-section"]');
-
     // 解析预算信息
-    const budget = container.querySelector('[data-test="budget"], [data-test="hourly-rate"]')?.textContent?.trim() || '预算未知';
+    const budgetElement = container.querySelector('[data-test="BudgetAmount"] strong');
+    const budget = budgetElement?.textContent?.trim() || '预算未知';
 
     // 解析投标信息
-    const proposalsText = proposalSection?.textContent || '';
-    const proposals = proposalsText.match(/(\d+)\s*个投标/)?.[ 1 ] || '未知';
-    const interviewing = proposalsText.match(/(\d+)\s*个面试/)?.[ 1 ] || '0';
-    const invitesSent = proposalsText.match(/(\d+)\s*个邀请/)?.[ 1 ] || '0';
+    const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || '未知';
+    const interviewing = container.querySelector('.ca-item:nth-child(3) .value')?.textContent?.trim() || '0';
+    const invitesSent = container.querySelector('.ca-item:nth-child(4) .value')?.textContent?.trim() || '0';
+    const lastViewed = container.querySelector('.ca-item:nth-child(2) .value')?.textContent?.trim() || '未知';
 
     // 解析客户信息
-    const clientText = clientSection?.textContent || '';
-    const clientCountry = clientText.match(/来自\s*([^,]+)/)?.[ 1 ] || '未知';
-    const totalSpent = clientText.match(/总支出\s*([\d,]+\s*美元)/)?.[ 1 ] || '未知';
-    const avgHourlyRate = clientText.match(/平均时薪\s*([\d.]+\s*美元)/)?.[ 1 ] || '未知';
+    const clientLocation = container.querySelector('[data-qa="client-location"] strong')?.textContent?.trim() || '未知';
+    const clientCity = container.querySelector('[data-qa="client-location"] .nowrap:first-child')?.textContent?.trim() || '';
+    const clientTime = container.querySelector('[data-test="LocalTime"]')?.textContent?.trim() || '';
+    const totalSpent = container.querySelector('[data-qa="client-spend"] span span')?.textContent?.trim() || '未知';
+
+    // 解析雇佣率
+    const hireRateText = container.querySelector('[data-qa="client-job-posting-stats"] div')?.textContent?.trim() || '';
+    const hireRate = hireRateText.match(/(\d+)%\s*hire rate/)?.[ 1 ] || '未知';
+
+    const jobInfo = {
+        budget,
+        proposals,
+        interviewing,
+        invitesSent,
+        lastViewed,
+        location: `${clientLocation} ${clientCity} ${clientTime}`.trim(),
+        totalSpent,
+        hireRate: `${hireRate}%`
+    };
+
+    console.log('提取的工作信息:', jobInfo);
 
     // 创建卡片元素
     const card = document.createElement('div');
@@ -58,36 +71,41 @@ function createInfoCard(container: Element) {
     card.innerHTML = `
         <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #14a800; font-weight: bold; font-size: 16px;">
-                <span>💰 预算: ${budget}</span>
+                <span>&#128176; 预算: ${jobInfo.budget}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
-                <span style="font-weight: 500;">📊 投标情况:</span>
+                <span style="font-weight: 500;">&#128202; 投标情况:</span>
                 <span>
-                    <span style="margin-right: 12px;">总数: ${proposals}</span>
-                    <span style="margin-right: 12px;">面试中: ${interviewing}</span>
-                    <span>已邀请: ${invitesSent}</span>
+                    <span style="margin-right: 12px;">总数: ${jobInfo.proposals}</span>
+                    <span style="margin-right: 12px;">面试中: ${jobInfo.interviewing}</span>
+                    <span>已邀请: ${jobInfo.invitesSent}</span>
+                </span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
+                <span style="font-weight: 500;">&#128100; 雇主信息:</span>
+                <span>
+                    <span style="margin-right: 12px">${jobInfo.location}</span>
+                    <span style="margin-right: 12px">总支出: ${jobInfo.totalSpent}</span>
+                    <span>雇佣率: ${jobInfo.hireRate}</span>
                 </span>
             </div>
 
             <div style="display: flex; justify-content: space-between; color: #001e00;">
-                <span style="font-weight: 500;">👤 雇主信息:</span>
-                <span>
-                    <span style="margin-right: 12px">${clientCountry}</span>
-                    <span style="margin-right: 12px">总支出: ${totalSpent}</span>
-                    <span>平均时薪: ${avgHourlyRate}</span>
-                </span>
+                <span style="font-weight: 500;">&#128337; 最后查看:</span>
+                <span>${jobInfo.lastViewed}</span>
             </div>
         </div>
     `;
 
     // 找到所有的air3-card-section
     const sections = container.querySelectorAll('.air3-card-section');
-    // 如果存在第三个section，就插入到它前面
+    // 如果存在第二个section，就插入到它前面
     if (sections.length >= 2) {
         sections[1].parentElement?.insertBefore(card, sections[1]);
     } else {
-        // 如果找不到第三个section，就插入到第一个section前面（作为后备方案）
+        // 如果找不到第二个section，就插入到第一个section前面（作为后备方案）
         const firstSection = container.querySelector('section');
         if (firstSection) {
             firstSection.parentElement?.insertBefore(card, firstSection);
