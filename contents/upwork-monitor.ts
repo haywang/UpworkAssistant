@@ -23,8 +23,28 @@ function debounce(func: Function, wait: number) {
 // 创建信息卡片
 function createInfoCard(container: Element) {
     // 解析预算信息
-    const budgetElement = container.querySelector('[data-test="BudgetAmount"] strong');
-    const budget = budgetElement?.textContent?.trim() || '预算未知';
+    const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
+    let budget = '预算未知';
+
+    if (budgetElement) {
+        // 检查是否有多个预算金额（时薪范围）
+        const budgetAmounts = container.querySelectorAll('[data-test="BudgetAmount"] strong');
+        if (budgetAmounts.length > 1) {
+            // 时薪范围的情况
+            const minRate = budgetAmounts[0]?.textContent?.trim();
+            const maxRate = budgetAmounts[1]?.textContent?.trim();
+            budget = `${minRate} - ${maxRate}`;
+        } else {
+            // 单一预算的情况
+            budget = budgetElement.querySelector('strong')?.textContent?.trim() || '预算未知';
+        }
+    }
+
+    // 检查是否为时薪制
+    const isHourly = container.querySelector('.description')?.textContent?.includes('Hourly') || false;
+    if (isHourly && budget !== '预算未知') {
+        budget = `${budget}/小时`;
+    }
 
     // 解析投标信息
     const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || '未知';
@@ -78,8 +98,9 @@ function createInfoCard(container: Element) {
                 <span style="font-weight: 500;">&#128202; 投标情况:</span>
                 <span>
                     <span style="margin-right: 12px;">总数: ${jobInfo.proposals}</span>
-                    <span style="margin-right: 12px;">面试中: ${jobInfo.interviewing}</span>
                     <span>已邀请: ${jobInfo.invitesSent}</span>
+                    <span style="margin-right: 12px;">面试中: ${jobInfo.interviewing}</span>
+
                 </span>
             </div>
 
