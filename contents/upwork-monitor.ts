@@ -1,4 +1,5 @@
 import type { PlasmoCSConfig } from "plasmo"
+import { Storage } from "@plasmohq/storage"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.upwork.com/*"],
@@ -7,6 +8,51 @@ export const config: PlasmoCSConfig = {
 
 let observer: MutationObserver | null = null;
 let isSliderOpen = false;  // 添加状态标记
+const storage = new Storage();
+
+// 语言配置
+const i18n = {
+  zh: {
+    budget: "预算",
+    proposals: "投标情况",
+    totalProposals: "总数",
+    interviewing: "面试中",
+    invitesSent: "已邀请",
+    clientInfo: "雇主信息",
+    totalSpent: "总支出",
+    hireRate: "雇佣率",
+    lastViewed: "最后查看",
+    hourly: "小时",
+    unknown: "未知",
+    notification: {
+      title: "Upwork Assistant",
+      body: "新的工作详情已打开！"
+    }
+  },
+  en: {
+    budget: "Budget",
+    proposals: "Proposals",
+    totalProposals: "Total",
+    interviewing: "Interviewing",
+    invitesSent: "Invites Sent",
+    clientInfo: "Client Info",
+    totalSpent: "Total Spent",
+    hireRate: "Hire Rate",
+    lastViewed: "Last Viewed",
+    hourly: "hour",
+    unknown: "Unknown",
+    notification: {
+      title: "Upwork Assistant",
+      body: "New job details opened!"
+    }
+  }
+};
+
+// 获取当前语言
+async function getCurrentLanguage(): Promise<"zh" | "en"> {
+  const lang = await storage.get("upwork-language");
+  return lang === "en" ? "en" : "zh";
+}
 
 // 创建一个防抖函数来避免过多的检查
 function debounce(func: Function, wait: number) {
@@ -22,10 +68,13 @@ function debounce(func: Function, wait: number) {
 }
 
 // 创建信息卡片
-function createInfoCard(container: Element) {
+async function createInfoCard(container: Element) {
+    const lang = await getCurrentLanguage();
+    const t = i18n[lang];
+
     // 解析预算信息
     const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
-    let budget = '预算未知';
+    let budget = t.unknown;
 
     if (budgetElement) {
         // 检查是否有多个预算金额（时薪范围）
@@ -37,31 +86,31 @@ function createInfoCard(container: Element) {
             budget = `${minRate} - ${maxRate}`;
         } else {
             // 单一预算的情况
-            budget = budgetElement.querySelector('strong')?.textContent?.trim() || '预算未知';
+            budget = budgetElement.querySelector('strong')?.textContent?.trim() || t.unknown;
         }
     }
 
     // 检查是否为时薪制
     const isHourly = container.querySelector('.description')?.textContent?.includes('Hourly') || false;
-    if (isHourly && budget !== '预算未知') {
-        budget = `${budget}/小时`;
+    if (isHourly && budget !== t.unknown) {
+        budget = `${budget}/${t.hourly}`;
     }
 
     // 解析投标信息
-    const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || '未知';
+    const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || t.unknown;
     const interviewing = container.querySelector('.ca-item:nth-child(3) .value')?.textContent?.trim() || '0';
     const invitesSent = container.querySelector('.ca-item:nth-child(4) .value')?.textContent?.trim() || '0';
-    const lastViewed = container.querySelector('.ca-item:nth-child(2) .value')?.textContent?.trim() || '未知';
+    const lastViewed = container.querySelector('.ca-item:nth-child(2) .value')?.textContent?.trim() || t.unknown;
 
     // 解析客户信息
-    const clientLocation = container.querySelector('[data-qa="client-location"] strong')?.textContent?.trim() || '未知';
+    const clientLocation = container.querySelector('[data-qa="client-location"] strong')?.textContent?.trim() || t.unknown;
     const clientCity = container.querySelector('[data-qa="client-location"] .nowrap:first-child')?.textContent?.trim() || '';
     const clientTime = container.querySelector('[data-test="LocalTime"]')?.textContent?.trim() || '';
-    const totalSpent = container.querySelector('[data-qa="client-spend"] span span')?.textContent?.trim() || '未知';
+    const totalSpent = container.querySelector('[data-qa="client-spend"] span span')?.textContent?.trim() || t.unknown;
 
     // 解析雇佣率
     const hireRateText = container.querySelector('[data-qa="client-job-posting-stats"] div')?.textContent?.trim() || '';
-    const hireRate = hireRateText.match(/(\d+)%\s*hire rate/)?.[ 1 ] || '未知';
+    const hireRate = hireRateText.match(/(\d+)%\s*hire rate/)?.[ 1 ] || t.unknown;
 
     const jobInfo = {
         budget,
@@ -75,9 +124,8 @@ function createInfoCard(container: Element) {
     };
 
     // 检查是否所有重要信息都已获取
-    if (budget === '预算未知' && proposals === '未知' && totalSpent === '未知') {
+    if (budget === t.unknown && proposals === t.unknown && totalSpent === t.unknown) {
         console.log('重要信息未加载完成，将重试...');
-        // 如果重要信息都未获取到，再等待1秒后重试
         setTimeout(() => createInfoCard(container), 1000);
         return;
     }
@@ -102,29 +150,29 @@ function createInfoCard(container: Element) {
     card.innerHTML = `
         <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #14a800; font-weight: bold; font-size: 16px;">
-                <span>&#128176; 预算: ${jobInfo.budget}</span>
+                <span>&#128176; ${t.budget}: ${jobInfo.budget}</span>
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
-                <span style="font-weight: 500;">&#128202; 投标情况:</span>
+                <span style="font-weight: 500;">&#128202; ${t.proposals}:</span>
                 <span>
-                    <span style="margin-right: 12px;">总数: ${jobInfo.proposals}</span>
-                    <span style="margin-right: 12px;">面试中: ${jobInfo.interviewing}</span>
-                    <span>已邀请: ${jobInfo.invitesSent}</span>
+                    <span style="margin-right: 12px;">${t.totalProposals}: ${jobInfo.proposals}</span>
+                    <span style="margin-right: 12px;">${t.interviewing}: ${jobInfo.interviewing}</span>
+                    <span>${t.invitesSent}: ${jobInfo.invitesSent}</span>
                 </span>
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
-                <span style="font-weight: 500;">&#128100; 雇主信息:</span>
+                <span style="font-weight: 500;">&#128100; ${t.clientInfo}:</span>
                 <span>
                     <span style="margin-right: 12px">${jobInfo.location}</span>
-                    <span style="margin-right: 12px">总支出: ${jobInfo.totalSpent}</span>
-                    <span>雇佣率: ${jobInfo.hireRate}</span>
+                    <span style="margin-right: 12px">${t.totalSpent}: ${jobInfo.totalSpent}</span>
+                    <span>${t.hireRate}: ${jobInfo.hireRate}</span>
                 </span>
             </div>
 
             <div style="display: flex; justify-content: space-between; color: #001e00;">
-                <span style="font-weight: 500;">&#128337; 最后查看:</span>
+                <span style="font-weight: 500;">&#128337; ${t.lastViewed}:</span>
                 <span>${jobInfo.lastViewed}</span>
             </div>
         </div>
@@ -213,18 +261,22 @@ function handleSliderClose() {
     }, 500); // 延迟500ms后恢复监听，确保DOM已更新
 }
 
-function showNotification() {
+// 修改通知函数以支持多语言
+async function showNotification() {
+    const lang = await getCurrentLanguage();
+    const t = i18n[lang].notification;
+
     console.log("准备显示通知");
     if (Notification.permission === "granted") {
-        new Notification("Upwork Assistant", {
-            body: "新的工作详情已打开！",
+        new Notification(t.title, {
+            body: t.body,
             icon: "assets/icon.png"
         });
     } else if (Notification.permission !== "denied") {
         Notification.requestPermission().then(permission => {
             if (permission === "granted") {
-                new Notification("Upwork Assistant", {
-                    body: "新的工作详情已打开！",
+                new Notification(t.title, {
+                    body: t.body,
                     icon: "assets/icon.png"
                 });
             }
