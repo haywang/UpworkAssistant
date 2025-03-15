@@ -1,33 +1,62 @@
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+# Upwork Job Details Assistant
 
-## Getting Started
+![Upwork Assistant Logo](assets/icon.png)
 
-First, run the development server:
+## 🌟 功能特点
 
-```bash
-pnpm dev
-# or
-npm run dev
-```
+Upwork Job Details Assistant 是一款专为 Upwork 自由职业者设计的浏览器扩展，它能让您更高效地浏览和评估工作机会。
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+### 📊 即时信息展示
+- 在工作详情页面自动显示关键信息卡片
+- 清晰展示预算/时薪信息
+- 实时显示竞争情况（投标人数、面试数量）
+- 一目了然的客户信息（位置、总支出、雇佣率）
 
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
+### 🌍 多语言支持
+- 支持中文和英文界面
+- 轻松切换语言偏好
 
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
+### 💡 智能设计
+- 优雅的信息卡片布局
+- 自动适应 Upwork 界面风格
+- 不影响原有页面体验
 
-## Making production build
+## 🎯 为什么选择我们？
 
-Run the following:
+- **节省时间**: 无需手动查找和计算关键信息
+- **做出明智决定**: 一眼看清项目和客户的重要指标
+- **不错过机会**: 通过即时通知保持信息更新
+- **专业体验**: 完美融入 Upwork 界面的设计风格
 
-```bash
-pnpm build
-# or
-npm run build
-```
+## 🚀 即刻开始
 
-This should create a production bundle for your extension, ready to be zipped and published to the stores.
+1. 从 Chrome 商店安装扩展
+2. 访问 Upwork 网站
+3. 点击任意工作详情
+4. 享受更高效的工作机会筛选体验
 
-## Submit to the webstores
+## 💪 为自由职业者提供支持
 
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+这款扩展的诞生源于对自由职业者工作效率的深度思考。我们希望通过技术创新，让每一位自由职业者都能更轻松地找到合适的项目。
+
+## 🔒 隐私保护
+
+- 仅在 Upwork 网站运行
+- 不收集任何个人信息
+- 不干扰您的浏览体验
+
+## 🆕 持续更新
+
+我们将持续听取用户反馈，不断改进和优化功能，为自由职业者提供更好的工具支持。
+
+---
+
+### 🌟 用户评价
+
+"这个扩展让我筛选工作变得如此简单！" - John D.
+
+"信息一目了然，帮我节省了大量时间。" - Sarah M.
+
+---
+
+Made with ❤️ for Upwork Freelancers

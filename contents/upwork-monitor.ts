@@ -222,7 +222,7 @@ const checkForSlider = debounce(() => {
 
     console.log("找到slider!");
     isSliderOpen = true;  // 标记slider已打开
-    showNotification();
+    // showNotification();
 
     // 只处理第一个找到的slider
     const slider = sliders[0];
