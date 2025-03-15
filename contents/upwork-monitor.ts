@@ -69,6 +69,12 @@ function debounce(func: Function, wait: number) {
 
 // 创建信息卡片
 async function createInfoCard(container: Element) {
+    // 再次检查是否已经存在卡片
+    if (document.querySelector('.job-info-card')) {
+        console.log('卡片已存在，跳过创建');
+        return;
+    }
+
     const lang = await getCurrentLanguage();
     const t = i18n[lang];
 
@@ -178,66 +184,58 @@ async function createInfoCard(container: Element) {
         </div>
     `;
 
-    // 找到所有的air3-card-section
-    const sections = container.querySelectorAll('.air3-card-section');
-    // 如果存在第二个section，就插入到它前面
-    if (sections.length >= 2) {
-        sections[1].parentElement?.insertBefore(card, sections[1]);
-    } else {
-        // 如果找不到第二个section，就插入到第一个section前面（作为后备方案）
-        const firstSection = container.querySelector('section');
-        if (firstSection) {
-            firstSection.parentElement?.insertBefore(card, firstSection);
+    // 在插入卡片之前再次检查是否已存在
+    if (!document.querySelector('.job-info-card')) {
+        // 找到所有的air3-card-section
+        const sections = container.querySelectorAll('.air3-card-section');
+        // 如果存在第二个section，就插入到它前面
+        if (sections.length >= 2) {
+            sections[1].parentElement?.insertBefore(card, sections[1]);
+        } else {
+            // 如果找不到第二个section，就插入到第一个section前面（作为后备方案）
+            const firstSection = container.querySelector('section');
+            if (firstSection) {
+                firstSection.parentElement?.insertBefore(card, firstSection);
+            }
         }
     }
 }
 
 // 检查slider的函数
 const checkForSlider = debounce(() => {
-    // 如果slider已经打开，不需要检查
-    if (isSliderOpen) {
+    const sliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
+
+    // 检查slider是否真的存在
+    if (sliders.length === 0) {
+        if (isSliderOpen) {
+            console.log("Slider已关闭，重置状态");
+            handleSliderClose();
+        }
         return;
     }
 
-    const sliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
-    if (sliders.length > 0) {
-        console.log("找到slider!");
-        isSliderOpen = true;  // 标记slider已打开
-        showNotification();
+    // 如果slider已经打开且已经添加了卡片，不需要重复处理
+    const existingCard = document.querySelector('.job-info-card');
+    if (isSliderOpen && existingCard) {
+        return;
+    }
 
-        // 为每个找到的slider添加信息卡片
-        sliders.forEach(slider => {
-            // 确保卡片只添加一次
-            if (!slider.querySelector('.job-info-card')) {
-                // 延迟1秒后获取信息并创建卡片
-                setTimeout(() => {
-                    console.log("开始获取工作信息...");
-                    createInfoCard(slider);
-                }, 1000);
+    console.log("找到slider!");
+    isSliderOpen = true;  // 标记slider已打开
+    showNotification();
+
+    // 只处理第一个找到的slider
+    const slider = sliders[0];
+    // 确保卡片只添加一次
+    if (!document.querySelector('.job-info-card')) {
+        // 延迟1秒后获取信息并创建卡片
+        setTimeout(() => {
+            console.log("开始获取工作信息...");
+            // 再次检查是否已经存在卡片
+            if (!document.querySelector('.job-info-card')) {
+                createInfoCard(slider);
             }
-
-            // 监听关闭按钮的点击事件
-            const closeButton = slider.querySelector('[data-test="slider-close-mobile"]');
-            if (closeButton) {
-                // 移除旧的事件监听器（如果存在）
-                closeButton.removeEventListener('click', handleSliderClose);
-                // 添加新的事件监听器
-                closeButton.addEventListener('click', handleSliderClose);
-            }
-
-            // 监听返回按钮的点击事件
-            const backButton = slider.querySelector('.air3-slider-prev-btn');
-            if (backButton) {
-                backButton.removeEventListener('click', handleSliderClose);
-                backButton.addEventListener('click', handleSliderClose);
-            }
-        });
-
-        // 暂停DOM监听
-        if (observer) {
-            console.log("暂停DOM监听");
-            observer.disconnect();
-        }
+        }, 1000);
     }
 }, 500);
 
@@ -249,16 +247,6 @@ function handleSliderClose() {
     // 移除可能存在的旧卡片
     const oldCards = document.querySelectorAll('.job-info-card');
     oldCards.forEach(card => card.remove());
-
-    // 重新开始监听
-    setTimeout(() => {
-        if (!observer) {
-            createObserver();
-        } else {
-            observer.observe(document.body, observerConfig);
-        }
-        console.log("恢复DOM监听");
-    }, 500); // 延迟500ms后恢复监听，确保DOM已更新
 }
 
 // 修改通知函数以支持多语言
@@ -298,11 +286,6 @@ function createObserver() {
     }
 
     observer = new MutationObserver((mutations) => {
-        // 如果slider已经打开，不需要处理mutations
-        if (isSliderOpen) {
-            return;
-        }
-
         let shouldCheck = false;
 
         for (const mutation of mutations) {
@@ -321,11 +304,6 @@ function createObserver() {
         }
 
         if (shouldCheck) {
-            // 检查slider是否真的已经关闭
-            const existingSlider = document.querySelector('.air3-slider-content[modaltitle="Job Details"]');
-            if (!existingSlider) {
-                isSliderOpen = false;
-            }
             checkForSlider();
         }
     });
@@ -337,9 +315,9 @@ function createObserver() {
 // 初始化函数
 function init() {
     console.log("Upwork Monitor 初始化");
+    // 确保初始状态正确
+    isSliderOpen = false;
     createObserver();
-
-    // 初始检查
     checkForSlider();
 }
 
