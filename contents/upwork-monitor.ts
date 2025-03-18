@@ -79,9 +79,10 @@ async function createInfoCard(container: Element) {
     const t = i18n[lang];
 
     // 解析预算信息
-    const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
     let budget = t.unknown;
 
+    // 尝试获取预算信息 - 方法1: 通过BudgetAmount标签
+    const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
     if (budgetElement) {
         // 检查是否有多个预算金额（时薪范围）
         const budgetAmounts = container.querySelectorAll('[data-test="BudgetAmount"] strong');
@@ -96,11 +97,47 @@ async function createInfoCard(container: Element) {
         }
     }
 
-    // 检查是否为时薪制
-    const isHourly = container.querySelector('.description')?.textContent?.includes('Hourly') || false;
-    if (isHourly && budget !== t.unknown) {
-        budget = `${budget}/${t.hourly}`;
+    // 方法2: 通过固定价格图标查找
+    if (budget === t.unknown) {
+        const fixedPriceIcon = container.querySelector('[data-cy="fixed-price"]');
+        if (fixedPriceIcon) {
+            const budgetText = fixedPriceIcon.parentElement?.querySelector('strong')?.textContent?.trim();
+            if (budgetText) {
+                budget = budgetText;
+            }
+        }
     }
+
+    // 方法3: 最后尝试通过一般选择器
+    if (budget === t.unknown) {
+        const allStrongs = container.querySelectorAll('strong');
+        for (const element of allStrongs) {
+            const text = element.textContent?.trim() || '';
+            // 检查是否是金额格式 ($数字)
+            if (text.startsWith('$') && /\$\d+(\.\d+)?/.test(text)) {
+                budget = text;
+                break;
+            }
+        }
+    }
+
+    // 检查工作类型
+    let jobType = '';
+    const hourlyElement = container.querySelector('.description');
+    if (hourlyElement) {
+        const descriptionText = hourlyElement.textContent?.trim() || '';
+        // 检查是否为时薪制或固定价格
+        if (descriptionText.includes('Hourly')) {
+            jobType = 'hourly';
+            if (budget !== t.unknown) {
+                budget = `${budget}/${t.hourly}`;
+            }
+        } else if (descriptionText.includes('Fixed-price')) {
+            jobType = 'fixed';
+        }
+    }
+
+    console.log(`工作类型: ${jobType}, 预算: ${budget}`);
 
     // 解析投标信息
     const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || t.unknown;
