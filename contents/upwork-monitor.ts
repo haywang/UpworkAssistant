@@ -18,6 +18,7 @@ const i18n = {
     totalProposals: "总数",
     interviewing: "面试中",
     invitesSent: "已邀请",
+    connectsRequired: "所需Connects",
     clientInfo: "雇主信息",
     totalSpent: "总支出",
     hireRate: "雇佣率",
@@ -35,6 +36,7 @@ const i18n = {
     totalProposals: "Total",
     interviewing: "Interviewing",
     invitesSent: "Invites Sent",
+    connectsRequired: "Connects Required",
     clientInfo: "Client Info",
     totalSpent: "Total Spent",
     hireRate: "Hire Rate",
@@ -145,6 +147,30 @@ async function createInfoCard(container: Element) {
     const invitesSent = container.querySelector('.ca-item:nth-child(4) .value')?.textContent?.trim() || '0';
     const lastViewed = container.querySelector('.ca-item:nth-child(2) .value')?.textContent?.trim() || t.unknown;
 
+    // 提取投标所需的Connects数量
+    let connectsRequired = '';
+    const proposalTextElement = container.querySelector('div[class*="text-light-on-muted"]');
+    if (proposalTextElement) {
+        const proposalText = proposalTextElement.textContent || '';
+        const connectsMatch = proposalText.match(/Send a proposal for: (\d+) Connects/);
+        if (connectsMatch && connectsMatch[1]) {
+            connectsRequired = connectsMatch[1];
+        }
+    }
+
+    // 如果上面的方法找不到，尝试其他选择器
+    if (!connectsRequired) {
+        const allStrongs = container.querySelectorAll('strong');
+        for (const el of allStrongs) {
+            const text = el.textContent?.trim() || '';
+            // 如果是纯数字 + " Connects" 格式
+            if (/^\d+ Connects$/.test(text)) {
+                connectsRequired = text.replace(' Connects', '');
+                break;
+            }
+        }
+    }
+
     // 解析客户信息
     const clientLocation = container.querySelector('[data-qa="client-location"] strong')?.textContent?.trim() || t.unknown;
     const clientCity = container.querySelector('[data-qa="client-location"] .nowrap:first-child')?.textContent?.trim() || '';
@@ -160,6 +186,7 @@ async function createInfoCard(container: Element) {
         proposals,
         interviewing,
         invitesSent,
+        connectsRequired,
         lastViewed,
         location: `${clientLocation} ${clientCity} ${clientTime}`.trim(),
         totalSpent,
@@ -199,9 +226,10 @@ async function createInfoCard(container: Element) {
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
                 <span style="font-weight: 500;">&#128202; ${t.proposals}:</span>
                 <span>
+                    ${jobInfo.connectsRequired ? `<span style="margin-right: 12px; color: #6600cc;">${t.connectsRequired}: ${jobInfo.connectsRequired}</span>` : ''}
                     <span style="margin-right: 12px;">${t.totalProposals}: ${jobInfo.proposals}</span>
                     <span style="margin-right: 12px;">${t.interviewing}: ${jobInfo.interviewing}</span>
-                    <span>${t.invitesSent}: ${jobInfo.invitesSent}</span>
+                    <span style="margin-right: 12px;">${t.invitesSent}: ${jobInfo.invitesSent}</span>
                 </span>
             </div>
 
