@@ -88,6 +88,7 @@ async function createInfoCard(container: Element) {
     // 尝试获取预算信息 - 方法1: 通过BudgetAmount标签
     const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
     if (budgetElement) {
+        console.log('使用data-test="BudgetAmount"获取预算');
         // 检查是否有多个预算金额（时薪范围）
         const budgetAmounts = container.querySelectorAll('[data-test="BudgetAmount"] strong');
         if (budgetAmounts.length > 1) {
@@ -103,6 +104,7 @@ async function createInfoCard(container: Element) {
 
     // 方法2: 通过固定价格图标查找
     if (budget === t.unknown) {
+        console.log('使用data-cy="fixed-price"获取预算');
         const fixedPriceIcon = container.querySelector('[data-cy="fixed-price"]');
         if (fixedPriceIcon) {
             const budgetText = fixedPriceIcon.parentElement?.querySelector('strong')?.textContent?.trim();
@@ -112,18 +114,6 @@ async function createInfoCard(container: Element) {
         }
     }
 
-    // 方法3: 最后尝试通过一般选择器
-    if (budget === t.unknown) {
-        const allStrongs = container.querySelectorAll('strong');
-        for (const element of allStrongs) {
-            const text = element.textContent?.trim() || '';
-            // 检查是否是金额格式 ($数字)
-            if (text.startsWith('$') && /\$\d+(\.\d+)?/.test(text)) {
-                budget = text;
-                break;
-            }
-        }
-    }
 
     // 检查工作类型
     let jobType = '';
@@ -143,32 +133,91 @@ async function createInfoCard(container: Element) {
 
     console.log(`工作类型: ${jobType}, 预算: ${budget}`);
 
-    // 解析投标信息
-    const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || t.unknown;
-    const lastViewed = container.querySelector('.ca-item:nth-child(2) .value')?.textContent?.trim() || t.unknown;
-
-    // 提取雇佣人数
+    // 使用标题查找投标信息，更加可靠
+    let proposals = t.unknown;
+    let lastViewed = t.unknown;
     let hires = '0';
-    const hiresElement = container.querySelector('.ca-item:nth-child(3) .value');
-    if (hiresElement) {
-        hires = hiresElement.textContent?.trim() || '0';
-    }
+    let interviewing = '0';
+    let invitesSent = '0';
+    let unansweredInvites = '0';
 
-    const interviewing = container.querySelector('.ca-item:nth-child(4) .value')?.textContent?.trim() || '0';
-    const invitesSent = container.querySelector('.ca-item:nth-child(5) .value')?.textContent?.trim() || '0';
+    // 查找所有客户活动项
+    const clientActivitySection = container.querySelector('[data-test="ClientActivity"]');
+    if (clientActivitySection) {
+        console.log('使用title获取客户活动');
+        // 获取所有活动项
+        const activityItems = clientActivitySection.querySelectorAll('.ca-item');
+
+        // 遍历所有活动项，根据标题提取值
+        activityItems.forEach(item => {
+            const titleElement = item.querySelector('.title');
+            const valueElement = item.querySelector('.value');
+
+            if (!titleElement || !valueElement) return;
+
+            const titleText = titleElement.textContent?.trim() || '';
+            const valueText = valueElement.textContent?.trim() || '';
+
+            // 根据标题文本确定数据类型
+            if (titleText.includes('Proposals')) {
+                proposals = valueText;
+            } else if (titleText.includes('Last viewed')) {
+                lastViewed = valueText;
+            } else if (titleText.includes('Hires')) {
+                hires = valueText;
+            } else if (titleText.includes('Interviewing')) {
+                interviewing = valueText;
+            } else if (titleText.includes('Invites sent')) {
+                invitesSent = valueText;
+            } else if (titleText.includes('Unanswered invites')) {
+                unansweredInvites = valueText;
+            }
+        });
+    }
 
     // 提取投标所需的Connects数量
     let connectsRequired = '';
+    // 方法1: 通过text-light-on-muted类查找包含"Send a proposal for"文本的元素
     const proposalTextElement = container.querySelector('div[class*="text-light-on-muted"]');
     if (proposalTextElement) {
         const proposalText = proposalTextElement.textContent || '';
-        const connectsMatch = proposalText.match(/Send a proposal for: (\d+) Connects/);
+
+        // 尝试匹配"Send a proposal for: X Connects"格式
+        let connectsMatch = proposalText.match(/Send a proposal for: (\d+) Connects/);
         if (connectsMatch && connectsMatch[1]) {
             connectsRequired = connectsMatch[1];
         }
+
+        // 尝试匹配"Required Connects to submit a proposal: X"格式
+        if (!connectsRequired) {
+            connectsMatch = proposalText.match(/Required Connects to submit a proposal: (\d+)/);
+            if (connectsMatch && connectsMatch[1]) {
+                connectsRequired = connectsMatch[1];
+            }
+        }
+
+        // 如果还是找不到，尝试在文本中查找任何数字+Connects的组合
+        if (!connectsRequired) {
+            connectsMatch = proposalText.match(/(\d+)[ ]?Connects/);
+            if (connectsMatch && connectsMatch[1]) {
+                connectsRequired = connectsMatch[1];
+            }
+        }
     }
 
-    // 如果上面的方法找不到，尝试其他选择器
+    // 方法2: 如果上面的方法找不到，尝试查找data-test="ConnectsDesktop"元素
+    if (!connectsRequired) {
+        const connectsDesktop = container.querySelector('[data-test="ConnectsDesktop"]');
+        if (connectsDesktop) {
+            const connectsText = connectsDesktop.textContent || '';
+            const connectsMatch = connectsText.match(/Required Connects to submit a proposal: (\d+)/);
+            if (connectsMatch && connectsMatch[1]) {
+                connectsRequired = connectsMatch[1].trim();
+            }
+        }
+    }
+
+    // 方法3: 查找所有strong元素
     if (!connectsRequired) {
         const allStrongs = container.querySelectorAll('strong');
         for (const el of allStrongs) {
@@ -176,6 +225,20 @@ async function createInfoCard(container: Element) {
             // 如果是纯数字 + " Connects" 格式
             if (/^\d+ Connects$/.test(text)) {
                 connectsRequired = text.replace(' Connects', '');
+                break;
+            }
+        }
+    }
+
+    // 方法4: 最后尝试匹配任何数字后跟Connects的span元素
+    if (!connectsRequired) {
+        const spans = container.querySelectorAll('span');
+        for (const span of spans) {
+            const text = span.textContent?.trim() || '';
+            if (/^\d+$/.test(text) &&
+                span.nextElementSibling &&
+                span.nextElementSibling.textContent?.includes('Connect')) {
+                connectsRequired = text;
                 break;
             }
         }
@@ -197,6 +260,7 @@ async function createInfoCard(container: Element) {
         hires,
         interviewing,
         invitesSent,
+        unansweredInvites,  // 新增未回复邀请数
         connectsRequired,
         lastViewed,
         location: `${clientLocation} ${clientCity} ${clientTime}`.trim(),
