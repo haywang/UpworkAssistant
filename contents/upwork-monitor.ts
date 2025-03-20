@@ -294,7 +294,7 @@ async function createInfoCard(container: Element) {
     // 设置卡片内容
     card.innerHTML = `
         <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #14a800; font-weight: bold; font-size: 16px;">
+            <div style="display: flex; justify-content: flex-start; gap: 12px; margin-bottom: 12px; color: #14a800; font-weight: bold; font-size: 16px;">
                 <span>&#128176; ${t.budget}: ${jobInfo.budget}</span>
                 ${jobInfo.connectsRequired ? `<span style="margin-right: 12px; color: #6600cc;">${t.connectsRequired}: ${jobInfo.connectsRequired}</span>` : ''}
             </div>
