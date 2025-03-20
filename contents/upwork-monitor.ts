@@ -296,12 +296,12 @@ async function createInfoCard(container: Element) {
         <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #14a800; font-weight: bold; font-size: 16px;">
                 <span>&#128176; ${t.budget}: ${jobInfo.budget}</span>
+                ${jobInfo.connectsRequired ? `<span style="margin-right: 12px; color: #6600cc;">${t.connectsRequired}: ${jobInfo.connectsRequired}</span>` : ''}
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
                 <span style="font-weight: 500;">&#128202; ${t.proposals}:</span>
                 <span>
-                    ${jobInfo.connectsRequired ? `<span style="margin-right: 12px; color: #6600cc;">${t.connectsRequired}: ${jobInfo.connectsRequired}</span>` : ''}
                     <span style="margin-right: 12px; color: ${parseInt(jobInfo.hires) > 0 ? '#14a800' : '#001e00'};">${t.hires}: ${jobInfo.hires}</span>
                     <span style="margin-right: 12px;">${t.totalProposals}: ${jobInfo.proposals}</span>
                     <span style="margin-right: 12px;">${t.interviewing}: ${jobInfo.interviewing}</span>
