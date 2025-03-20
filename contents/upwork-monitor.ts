@@ -18,7 +18,8 @@ const i18n = {
     totalProposals: "总数",
     interviewing: "面试中",
     invitesSent: "已邀请",
-    connectsRequired: "所需Connects",
+    connectsRequired: "Connects",
+    hires: "已雇佣",
     clientInfo: "雇主信息",
     totalSpent: "总支出",
     hireRate: "雇佣率",
@@ -36,7 +37,8 @@ const i18n = {
     totalProposals: "Total",
     interviewing: "Interviewing",
     invitesSent: "Invites Sent",
-    connectsRequired: "Connects Required",
+    connectsRequired: "Connects",
+    hires: "Hires",
     clientInfo: "Client Info",
     totalSpent: "Total Spent",
     hireRate: "Hire Rate",
@@ -143,9 +145,17 @@ async function createInfoCard(container: Element) {
 
     // 解析投标信息
     const proposals = container.querySelector('.ca-item:nth-child(1) .value')?.textContent?.trim() || t.unknown;
-    const interviewing = container.querySelector('.ca-item:nth-child(3) .value')?.textContent?.trim() || '0';
-    const invitesSent = container.querySelector('.ca-item:nth-child(4) .value')?.textContent?.trim() || '0';
     const lastViewed = container.querySelector('.ca-item:nth-child(2) .value')?.textContent?.trim() || t.unknown;
+
+    // 提取雇佣人数
+    let hires = '0';
+    const hiresElement = container.querySelector('.ca-item:nth-child(3) .value');
+    if (hiresElement) {
+        hires = hiresElement.textContent?.trim() || '0';
+    }
+
+    const interviewing = container.querySelector('.ca-item:nth-child(4) .value')?.textContent?.trim() || '0';
+    const invitesSent = container.querySelector('.ca-item:nth-child(5) .value')?.textContent?.trim() || '0';
 
     // 提取投标所需的Connects数量
     let connectsRequired = '';
@@ -184,6 +194,7 @@ async function createInfoCard(container: Element) {
     const jobInfo = {
         budget,
         proposals,
+        hires,
         interviewing,
         invitesSent,
         connectsRequired,
@@ -212,7 +223,7 @@ async function createInfoCard(container: Element) {
         margin-bottom: 16px;
         font-family: 'Neue Montreal', sans-serif;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        width: 80%;
+        width: 90%;
         margin: 0 auto;
     `;
 
@@ -227,6 +238,7 @@ async function createInfoCard(container: Element) {
                 <span style="font-weight: 500;">&#128202; ${t.proposals}:</span>
                 <span>
                     ${jobInfo.connectsRequired ? `<span style="margin-right: 12px; color: #6600cc;">${t.connectsRequired}: ${jobInfo.connectsRequired}</span>` : ''}
+                    <span style="margin-right: 12px; color: ${parseInt(jobInfo.hires) > 0 ? '#14a800' : '#001e00'};">${t.hires}: ${jobInfo.hires}</span>
                     <span style="margin-right: 12px;">${t.totalProposals}: ${jobInfo.proposals}</span>
                     <span style="margin-right: 12px;">${t.interviewing}: ${jobInfo.interviewing}</span>
                     <span style="margin-right: 12px;">${t.invitesSent}: ${jobInfo.invitesSent}</span>
