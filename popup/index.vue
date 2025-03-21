@@ -18,7 +18,7 @@ import { ref, onMounted } from 'vue'
 import { Storage } from "@plasmohq/storage"
 
 const storage = new Storage()
-const language = ref('zh')
+const language = ref('en')
 
 onMounted(async () => {
   // 获取保存的语言设置
