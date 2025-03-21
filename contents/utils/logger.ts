@@ -2,9 +2,11 @@
  * 日志工具 - 在开发环境打印日志，生产环境不打印
  */
 
+
 // 检测打印标志 - 可以通过构建时的环境变量控制
 // 为简化实现，我们提供一个全局变量来控制
-const DEBUG_MODE = false; // 设置为true开启调试日志，发布前设置为false
+const DEBUG_MODE = process.env.NODE_ENV === 'development'; // 设置为true开启调试日志，发布前设置为false
+console.warn('[Upwork Assistant] Node Environment:', process.env.NODE_ENV,  DEBUG_MODE);
 
 /**
  * 日志工具类
