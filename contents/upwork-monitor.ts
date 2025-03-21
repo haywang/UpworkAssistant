@@ -1,5 +1,6 @@
 import type { PlasmoCSConfig } from "plasmo"
 import { Storage } from "@plasmohq/storage"
+import { Logger } from "./utils/logger"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.upwork.com/*"],
@@ -75,7 +76,7 @@ function debounce(func: Function, wait: number) {
 async function createInfoCard(container: Element) {
     // 再次检查是否已经存在卡片
     if (document.querySelector('.job-info-card')) {
-        console.log('卡片已存在，跳过创建');
+        Logger.log('卡片已存在，跳过创建');
         return;
     }
 
@@ -88,7 +89,7 @@ async function createInfoCard(container: Element) {
     // 尝试获取预算信息 - 方法1: 通过BudgetAmount标签
     const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
     if (budgetElement) {
-        console.log('使用data-test="BudgetAmount"获取预算');
+        Logger.log('使用data-test="BudgetAmount"获取预算');
         // 检查是否有多个预算金额（时薪范围）
         const budgetAmounts = container.querySelectorAll('[data-test="BudgetAmount"] strong');
         if (budgetAmounts.length > 1) {
@@ -104,7 +105,7 @@ async function createInfoCard(container: Element) {
 
     // 方法2: 通过固定价格图标查找
     if (budget === t.unknown) {
-        console.log('使用data-cy="fixed-price"获取预算');
+        Logger.log('使用data-cy="fixed-price"获取预算');
         const fixedPriceIcon = container.querySelector('[data-cy="fixed-price"]');
         if (fixedPriceIcon) {
             const budgetText = fixedPriceIcon.parentElement?.querySelector('strong')?.textContent?.trim();
@@ -131,7 +132,7 @@ async function createInfoCard(container: Element) {
         }
     }
 
-    console.log(`工作类型: ${jobType}, 预算: ${budget}`);
+    Logger.log(`工作类型: ${jobType}, 预算: ${budget}`);
 
     // 使用标题查找投标信息，更加可靠
     let proposals = t.unknown;
@@ -144,7 +145,7 @@ async function createInfoCard(container: Element) {
     // 查找所有客户活动项
     const clientActivitySection = container.querySelector('[data-test="ClientActivity"]');
     if (clientActivitySection) {
-        console.log('使用title获取客户活动');
+        Logger.log('使用title获取客户活动');
         // 获取所有活动项
         const activityItems = clientActivitySection.querySelectorAll('.ca-item');
 
@@ -270,12 +271,12 @@ async function createInfoCard(container: Element) {
 
     // 检查是否所有重要信息都已获取
     if (budget === t.unknown && proposals === t.unknown && totalSpent === t.unknown) {
-        console.log('重要信息未加载完成，将重试...');
+        Logger.log('重要信息未加载完成，将重试...');
         setTimeout(() => createInfoCard(container), 1000);
         return;
     }
 
-    console.log('提取的工作信息:', jobInfo);
+    Logger.log('提取的工作信息:', jobInfo);
 
     // 创建卡片元素
     const card = document.createElement('div');
@@ -349,7 +350,7 @@ const checkForSlider = debounce(() => {
     // 检查slider是否真的存在
     if (sliders.length === 0) {
         if (isSliderOpen) {
-            console.log("Slider已关闭，重置状态");
+            Logger.log("Slider已关闭，重置状态");
             handleSliderClose();
         }
         return;
@@ -361,7 +362,7 @@ const checkForSlider = debounce(() => {
         return;
     }
 
-    console.log("找到slider!");
+    Logger.log("找到slider!");
     isSliderOpen = true;  // 标记slider已打开
     // showNotification();
 
@@ -371,7 +372,7 @@ const checkForSlider = debounce(() => {
     if (!document.querySelector('.job-info-card')) {
         // 延迟1秒后获取信息并创建卡片
         setTimeout(() => {
-            console.log("开始获取工作信息...");
+            Logger.log("开始获取工作信息...");
             // 再次检查是否已经存在卡片
             if (!document.querySelector('.job-info-card')) {
                 createInfoCard(slider);
@@ -382,7 +383,7 @@ const checkForSlider = debounce(() => {
 
 // 处理slider关闭的函数
 function handleSliderClose() {
-    console.log("Slider已关闭");
+    Logger.log("Slider已关闭");
     isSliderOpen = false;  // 重置状态
 
     // 移除可能存在的旧卡片
@@ -395,7 +396,7 @@ async function showNotification() {
     const lang = await getCurrentLanguage();
     const t = i18n[lang].notification;
 
-    console.log("准备显示通知");
+    Logger.log("准备显示通知");
     if (Notification.permission === "granted") {
         new Notification(t.title, {
             body: t.body,
@@ -450,12 +451,12 @@ function createObserver() {
     });
 
     observer.observe(document.body, observerConfig);
-    console.log("Observer已启动");
+    Logger.log("Observer已启动");
 }
 
 // 初始化函数
 function init() {
-    console.log("Upwork Monitor 初始化");
+    Logger.log("Upwork Monitor 初始化");
     // 确保初始状态正确
     isSliderOpen = false;
     createObserver();
@@ -472,7 +473,7 @@ if (document.readyState === "loading") {
 // 处理页面可见性变化
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
-        console.log("页面变为可见，重新初始化observer");
+        Logger.log("页面变为可见，重新初始化observer");
         init();
     }
 });
