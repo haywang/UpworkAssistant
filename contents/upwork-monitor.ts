@@ -89,7 +89,7 @@ async function createInfoCard(container: Element) {
     // 尝试获取预算信息 - 方法1: 通过BudgetAmount标签
     const budgetElement = container.querySelector('[data-test="BudgetAmount"]');
     if (budgetElement) {
-        Logger.log('使用data-test="BudgetAmount"获取预算');
+        // Logger.log('使用data-test="BudgetAmount"获取预算');
         // 检查是否有多个预算金额（时薪范围）
         const budgetAmounts = container.querySelectorAll('[data-test="BudgetAmount"] strong');
         if (budgetAmounts.length > 1) {
@@ -105,7 +105,7 @@ async function createInfoCard(container: Element) {
 
     // 方法2: 通过固定价格图标查找
     if (budget === t.unknown) {
-        Logger.log('使用data-cy="fixed-price"获取预算');
+        // Logger.log('使用data-cy="fixed-price"获取预算');
         const fixedPriceIcon = container.querySelector('[data-cy="fixed-price"]');
         if (fixedPriceIcon) {
             const budgetText = fixedPriceIcon.parentElement?.querySelector('strong')?.textContent?.trim();
@@ -144,6 +144,7 @@ async function createInfoCard(container: Element) {
 
     // 查找所有客户活动项
     const clientActivitySection = container.querySelector('[data-test="ClientActivity"]');
+    Logger.log('clientActivitySection', clientActivitySection);
     if (clientActivitySection) {
         Logger.log('使用title获取客户活动');
         // 获取所有活动项
