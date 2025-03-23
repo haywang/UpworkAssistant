@@ -272,7 +272,7 @@ async function createInfoCard(container: Element) {
 
     // 检查是否所有重要信息都已获取
     if (budget === t.unknown && proposals === t.unknown && totalSpent === t.unknown) {
-        Logger.log('重要信息未加载完成，将重试...');
+        Logger.log('重要信息未加载完成，将重试...', jobInfo);
         setTimeout(() => createInfoCard(container), 1000);
         return;
     }
@@ -365,7 +365,6 @@ const checkForSlider = debounce(() => {
 
     Logger.log("找到slider!");
     isSliderOpen = true;  // 标记slider已打开
-    // showNotification();
 
     // 只处理第一个找到的slider
     const slider = sliders[0];
@@ -390,29 +389,6 @@ function handleSliderClose() {
     // 移除可能存在的旧卡片
     const oldCards = document.querySelectorAll('.job-info-card');
     oldCards.forEach(card => card.remove());
-}
-
-// 修改通知函数以支持多语言
-async function showNotification() {
-    const lang = await getCurrentLanguage();
-    const t = i18n[lang].notification;
-
-    Logger.log("准备显示通知");
-    if (Notification.permission === "granted") {
-        new Notification(t.title, {
-            body: t.body,
-            icon: "assets/icon.png"
-        });
-    } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                new Notification(t.title, {
-                    body: t.body,
-                    icon: "assets/icon.png"
-                });
-            }
-        });
-    }
 }
 
 // 配置观察选项

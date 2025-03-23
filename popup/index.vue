@@ -18,12 +18,13 @@ import { ref, onMounted } from 'vue'
 import { Storage } from "@plasmohq/storage"
 
 const storage = new Storage()
+// default is en
 const language = ref('en')
 
 onMounted(async () => {
   // 获取保存的语言设置
   const savedLanguage = await storage.get('upwork-language')
-  language.value = savedLanguage || 'zh'
+  language.value = savedLanguage || 'en'
 })
 
 const handleLanguageChange = async () => {
