@@ -273,7 +273,15 @@ async function createInfoCard(container: Element) {
     // 检查是否所有重要信息都已获取
     if (budget === t.unknown && proposals === t.unknown && totalSpent === t.unknown) {
         Logger.log('重要信息未加载完成，将重试...', jobInfo);
-        setTimeout(() => createInfoCard(container), 1000);
+        // 延迟1秒后重新获取最新的container
+        setTimeout(() => {
+            const newSlider = document.querySelector('.air3-slider-content[modaltitle="Job Details"]');
+            if (newSlider) {
+                createInfoCard(newSlider);
+            } else {
+                Logger.warn('重试时未找到slider，可能已关闭');
+            }
+        }, 1000);
         return;
     }
 
@@ -377,7 +385,7 @@ const checkForSlider = debounce(() => {
             if (!document.querySelector('.job-info-card')) {
                 createInfoCard(slider);
             }
-        }, 1000);
+        }, 2000);
     }
 }, 500);
 
