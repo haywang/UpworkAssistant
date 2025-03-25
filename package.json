@@ -2,7 +2,7 @@
   "name": "upwork-assistant",
   "displayName": "Upwork Assistant",
   "version": "0.0.1",
-  "description": "It's an Upwork Assistant designed to help me apply for jobs more efficiently. It's a Chrome Extension.",
+  "description": "It's an Upwork Assistant designed to help you apply for jobs more efficiently.",
   "author": "Austin",
   "scripts": {
     "dev": "plasmo dev",
