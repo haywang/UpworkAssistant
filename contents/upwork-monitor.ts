@@ -143,38 +143,42 @@ async function createInfoCard(container: Element) {
     let unansweredInvites = '0';
 
     // 查找所有客户活动项
-    const clientActivitySection = container.querySelector('[data-test="ClientActivity"]');
-    Logger.log('clientActivitySection', clientActivitySection);
-    if (clientActivitySection) {
-        Logger.log('使用title获取客户活动');
-        // 获取所有活动项
-        const activityItems = clientActivitySection.querySelectorAll('.ca-item');
+    let clientActivityItems = container.querySelector('.client-activity-items');
+    Logger.log('clientActivityItems', clientActivityItems);
 
-        // 遍历所有活动项，根据标题提取值
-        activityItems.forEach(item => {
-            const titleElement = item.querySelector('.title');
-            const valueElement = item.querySelector('.value');
+    // 获取所有活动项
+    const activityItems = clientActivityItems?.querySelectorAll('.ca-item') || [];
+    Logger.log('activityItems', activityItems);
 
-            if (!titleElement || !valueElement) return;
+    // 遍历所有活动项，根据标题提取值
+    activityItems.length > 0 && activityItems.forEach(item => {
+        const titleElement = item.querySelector('.title');
+        const valueElement = item.querySelector('.value');
 
-            const titleText = titleElement.textContent?.trim() || '';
-            const valueText = valueElement.textContent?.trim() || '';
+        if (!titleElement || !valueElement) return;
 
-            // 根据标题文本确定数据类型
-            if (titleText.includes('Proposals')) {
-                proposals = valueText;
-            } else if (titleText.includes('Last viewed')) {
-                lastViewed = valueText;
-            } else if (titleText.includes('Hires')) {
-                hires = valueText;
-            } else if (titleText.includes('Interviewing')) {
-                interviewing = valueText;
-            } else if (titleText.includes('Invites sent')) {
-                invitesSent = valueText;
-            } else if (titleText.includes('Unanswered invites')) {
-                unansweredInvites = valueText;
-            }
-        });
+        const titleText = titleElement.textContent?.trim() || '';
+        const valueText = valueElement.textContent?.trim() || '';
+
+        // 根据标题文本确定数据类型
+        if (titleText.includes('Proposals')) {
+            proposals = valueText;
+        } else if (titleText.includes('Last viewed')) {
+            lastViewed = valueText;
+        } else if (titleText.includes('Hires')) {
+            hires = valueText;
+        } else if (titleText.includes('Interviewing')) {
+            interviewing = valueText;
+        } else if (titleText.includes('Invites sent')) {
+            invitesSent = valueText;
+        } else if (titleText.includes('Unanswered invites')) {
+            unansweredInvites = valueText;
+        }
+    });
+
+    // 如果没有找到任何活动项，记录警告
+    if (activityItems.length === 0) {
+        Logger.warn('未找到任何客户活动项');
     }
 
     // 提取投标所需的Connects数量
