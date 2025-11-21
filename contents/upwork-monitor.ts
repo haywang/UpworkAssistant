@@ -115,6 +115,21 @@ async function createInfoCard(container: Element) {
         }
     }
 
+    // 方法3: 通过时薪图标查找 (data-cy="clock-timelog")
+    if (budget === t.unknown) {
+        const hourlyIcon = container.querySelector('[data-cy="clock-timelog"]');
+        if (hourlyIcon) {
+            const parentLi = hourlyIcon.closest('li');
+            const strongElements = parentLi?.querySelectorAll('strong');
+            if (strongElements && strongElements.length >= 2) {
+                const minRate = strongElements[0]?.textContent?.trim();
+                const maxRate = strongElements[1]?.textContent?.trim();
+                budget = `${minRate} - ${maxRate}`;
+            } else if (strongElements && strongElements.length === 1) {
+                budget = strongElements[0]?.textContent?.trim() || t.unknown;
+            }
+        }
+    }
 
     // 检查工作类型
     let jobType = '';
