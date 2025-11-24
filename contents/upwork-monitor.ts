@@ -313,6 +313,9 @@ async function createInfoCard(container: Element) {
     // 获取当前语言资源
     const t = await getLanguageResources();
 
+    // 获取简短版本文本，如果没有则使用完整版本
+    const s = t.short || t;
+
     // 解析预算信息
     let budget = t.unknown;
 
@@ -544,13 +547,13 @@ async function createInfoCard(container: Element) {
             </div>
 
             <div style="display: flex; justify-content: space-between; margin-bottom: 12px; color: #001e00;">
-                <span style="font-weight: 500;">&#128202; ${t.proposals}:</span>
+                <span style="font-weight: 500;">&#128202; ${s.proposals}:</span>
                 <span>
-                    <span style="margin-right: 12px; color: ${parseInt(jobInfo.hires) > 0 ? '#14a800' : '#001e00'};">${t.hires}: ${jobInfo.hires}</span>
-                    <span style="margin-right: 12px;">${t.totalProposals}: ${jobInfo.proposals}</span>
-                    <span style="margin-right: 12px;">${t.interviewing}: ${jobInfo.interviewing}</span>
-                    <span style="margin-right: 12px;">${t.invitesSent}: ${jobInfo.invitesSent}</span>
-                    <span style="margin-right: 12px;">${t.unansweredInvites}: ${jobInfo.unansweredInvites}</span>
+                    <span style="margin-right: 12px; color: ${parseInt(jobInfo.hires) > 0 ? '#14a800' : '#001e00'};">${s.hires}: ${jobInfo.hires}</span>
+                    <span style="margin-right: 12px;">${s.totalProposals}: ${jobInfo.proposals}</span>
+                    <span style="margin-right: 12px;">${s.interviewing}: ${jobInfo.interviewing}</span>
+                    <span style="margin-right: 12px;">${s.invitesSent}: ${jobInfo.invitesSent}</span>
+                    <span style="margin-right: 12px;">${s.unansweredInvites}: ${jobInfo.unansweredInvites}</span>
                 </span>
             </div>
 

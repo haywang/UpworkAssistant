@@ -18,5 +18,17 @@ export const zh: LanguageResources = {
   notification: {
     title: "Upwork Assistant",
     body: "新的工作详情已打开！"
+  },
+  short: {
+    proposals: "投标",
+    totalProposals: "总数",
+    interviewing: "面试",
+    invitesSent: "邀请",
+    unansweredInvites: "未回复",
+    hires: "雇佣",
+    clientInfo: "雇主",
+    totalSpent: "支出",
+    hireRate: "比率",
+    lastViewed: "查看"
   }
 };

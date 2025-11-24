@@ -18,6 +18,19 @@ export interface LanguageResources {
     title: string;
     body: string;
   };
+  // 简短版本（用于紧凑显示）
+  short?: {
+    proposals: string;
+    totalProposals: string;
+    interviewing: string;
+    invitesSent: string;
+    unansweredInvites: string;
+    hires: string;
+    clientInfo: string;
+    totalSpent: string;
+    hireRate: string;
+    lastViewed: string;
+  };
 }
 
 // 支持的语言类型

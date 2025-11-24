@@ -18,5 +18,17 @@ export const en: LanguageResources = {
   notification: {
     title: "Upwork Assistant",
     body: "New job details opened!"
+  },
+  short: {
+    proposals: "Prop",
+    totalProposals: "Total",
+    interviewing: "Inter",
+    invitesSent: "Invites",
+    unansweredInvites: "Unanswered",
+    hires: "Hires",
+    clientInfo: "Client",
+    totalSpent: "Spent",
+    hireRate: "Rate",
+    lastViewed: "Viewed"
   }
 };
