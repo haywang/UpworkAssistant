@@ -1,8 +1,8 @@
 {
   "name": "upwork-assistant",
   "displayName": "Upwork Assistant",
-  "version": "0.0.1",
-  "description": "It's an Upwork Assistant designed to help you apply for jobs more efficiently.",
+  "version": "1.0.0",
+  "description": "Upwork Assistant with 14 languages support - intelligent job information aggregation for freelancers",
   "author": "Austin",
   "scripts": {
     "dev": "plasmo dev",
