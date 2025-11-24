@@ -23,6 +23,7 @@ const i18n = {
     totalProposals: "总数",
     interviewing: "面试中",
     invitesSent: "已邀请",
+    unansweredInvites: "未回复邀请",
     connectsRequired: "Connects",
     hires: "已雇佣",
     clientInfo: "雇主信息",
@@ -42,6 +43,7 @@ const i18n = {
     totalProposals: "Total",
     interviewing: "Interviewing",
     invitesSent: "Invites Sent",
+    unansweredInvites: "Unanswered invites",
     connectsRequired: "Connects",
     hires: "Hires",
     clientInfo: "Client Info",
@@ -311,6 +313,7 @@ async function createInfoCard(container: Element) {
                     <span style="margin-right: 12px;">${t.totalProposals}: ${jobInfo.proposals}</span>
                     <span style="margin-right: 12px;">${t.interviewing}: ${jobInfo.interviewing}</span>
                     <span style="margin-right: 12px;">${t.invitesSent}: ${jobInfo.invitesSent}</span>
+                    <span style="margin-right: 12px;">${t.unansweredInvites}: ${jobInfo.unansweredInvites}</span>
                 </span>
             </div>
 
