@@ -7,9 +7,13 @@ export const config: PlasmoCSConfig = {
   all_frames: true
 }
 
-let observer: MutationObserver | null = null;
-let isSliderOpen = false;  // 添加状态标记
+let sliderObserver: MutationObserver | null = null;  // 第一层：监听 slider 出现
+let dataObserver: MutationObserver | null = null;    // 第二层：监听 slider 内数据加载
+let isSliderOpen = false;
 const storage = new Storage();
+
+// 数据加载超时时间（毫秒）
+const DATA_LOAD_TIMEOUT = 5000;
 
 // 语言配置
 const i18n = {
@@ -56,20 +60,7 @@ const i18n = {
 // 获取当前语言
 async function getCurrentLanguage(): Promise<"zh" | "en"> {
   const lang = await storage.get("upwork-language");
-  return lang === "en" ? "en" : "zh";
-}
-
-// 创建一个防抖函数来避免过多的检查
-function debounce(func: Function, wait: number) {
-    let timeout: number;
-    return function executedFunction(...args: any[]) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = window.setTimeout(later, wait);
-    };
+  return lang || lang === "zh" ? "zh" : "en";
 }
 
 // 创建信息卡片
@@ -289,21 +280,6 @@ async function createInfoCard(container: Element) {
         hireRate: `${hireRate}%`
     };
 
-    // 检查是否所有重要信息都已获取
-    if (budget === t.unknown && proposals === t.unknown && totalSpent === t.unknown) {
-        Logger.log('重要信息未加载完成，将重试...', jobInfo);
-        // 延迟1秒后重新获取最新的container
-        setTimeout(() => {
-            const newSlider = document.querySelector('.air3-slider-content[modaltitle="Job Details"]');
-            if (newSlider) {
-                createInfoCard(newSlider);
-            } else {
-                Logger.warn('重试时未找到slider，可能已关闭');
-            }
-        }, 1000);
-        return;
-    }
-
     Logger.log('提取的工作信息:', jobInfo);
 
     // 创建卡片元素
@@ -371,91 +347,141 @@ async function createInfoCard(container: Element) {
     }
 }
 
-// 检查slider的函数
-const checkForSlider = debounce(() => {
-    const sliders = document.querySelectorAll('.air3-slider-content[modaltitle="Job Details"]');
+// 检查关键数据是否已加载
+function isDataReady(slider: Element): boolean {
+    const hasActivity = slider.querySelector('.client-activity-items');
+    const hasBudget = slider.querySelector('[data-cy="clock-timelog"], [data-cy="fixed-price"], [data-test="BudgetAmount"]');
+    return !!(hasActivity && hasBudget);
+}
 
-    // 检查slider是否真的存在
-    if (sliders.length === 0) {
-        if (isSliderOpen) {
-            Logger.log("Slider已关闭，重置状态");
-            handleSliderClose();
+// 第二层：监听 slider 内部数据加载
+function waitForData(slider: Element) {
+    // 清理之前的数据观察者
+    if (dataObserver) {
+        dataObserver.disconnect();
+        dataObserver = null;
+    }
+
+    // 如果数据已经就绪，直接创建卡片
+    if (isDataReady(slider)) {
+        Logger.log("数据已就绪，立即创建卡片");
+        if (!document.querySelector('.job-info-card')) {
+            createInfoCard(slider);
         }
         return;
     }
 
-    // 如果slider已经打开且已经添加了卡片，不需要重复处理
-    const existingCard = document.querySelector('.job-info-card');
-    if (isSliderOpen && existingCard) {
-        return;
-    }
+    Logger.log("等待数据加载...");
 
-    Logger.log("找到slider!");
-    isSliderOpen = true;  // 标记slider已打开
+    // 设置超时保护
+    const timeoutId = setTimeout(() => {
+        Logger.log("数据加载超时，强制创建卡片");
+        if (dataObserver) {
+            dataObserver.disconnect();
+            dataObserver = null;
+        }
+        if (!document.querySelector('.job-info-card')) {
+            createInfoCard(slider);
+        }
+    }, DATA_LOAD_TIMEOUT);
 
-    // 只处理第一个找到的slider
-    const slider = sliders[0];
-    // 确保卡片只添加一次
-    if (!document.querySelector('.job-info-card')) {
-        // 延迟1秒后获取信息并创建卡片
-        setTimeout(() => {
-            Logger.log("开始获取工作信息...");
-            // 再次检查是否已经存在卡片
+    // 创建数据观察者，监听 slider 内部变化
+    dataObserver = new MutationObserver(() => {
+        if (isDataReady(slider)) {
+            Logger.log("数据加载完成");
+            clearTimeout(timeoutId);
+            dataObserver?.disconnect();
+            dataObserver = null;
             if (!document.querySelector('.job-info-card')) {
                 createInfoCard(slider);
             }
-        }, 2000);
+        }
+    });
+
+    dataObserver.observe(slider, {
+        childList: true,
+        subtree: true
+    });
+}
+
+// 处理 slider 打开
+function handleSliderOpen(slider: Element) {
+    if (isSliderOpen && document.querySelector('.job-info-card')) {
+        return;
     }
-}, 500);
 
-// 处理slider关闭的函数
+    Logger.log("找到 slider!");
+    isSliderOpen = true;
+    waitForData(slider);
+}
+
+// 处理 slider 关闭
 function handleSliderClose() {
-    Logger.log("Slider已关闭");
-    isSliderOpen = false;  // 重置状态
+    Logger.log("Slider 已关闭");
+    isSliderOpen = false;
 
-    // 移除可能存在的旧卡片
+    // 清理数据观察者
+    if (dataObserver) {
+        dataObserver.disconnect();
+        dataObserver = null;
+    }
+
+    // 移除旧卡片
     const oldCards = document.querySelectorAll('.job-info-card');
     oldCards.forEach(card => card.remove());
 }
 
-// 配置观察选项
-const observerConfig: MutationObserverInit = {
-    childList: true,
-    subtree: true,
-    attributes: true
-};
-
-// 创建观察者
-function createObserver() {
-    if (observer) {
-        observer.disconnect();
+// 第一层：监听 slider 出现/消失
+function createSliderObserver() {
+    if (sliderObserver) {
+        sliderObserver.disconnect();
     }
 
-    observer = new MutationObserver((mutations) => {
-        let shouldCheck = false;
-
+    sliderObserver = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
-            // 如果是节点添加或移除
-            if (mutation.type === 'childList') {
-                shouldCheck = true;
-                break;
-            }
-            // 如果是属性变化，且是相关属性
-            if (mutation.type === 'attributes' &&
-                mutation.target instanceof Element &&
-                (mutation.attributeName === 'class' || mutation.attributeName === 'modaltitle')) {
-                shouldCheck = true;
-                break;
-            }
-        }
+            if (mutation.type !== 'childList') continue;
 
-        if (shouldCheck) {
-            checkForSlider();
+            // 检查是否有 slider 被添加
+            for (const node of mutation.addedNodes) {
+                if (!(node instanceof Element)) continue;
+
+                const slider = node.matches('.air3-slider-content[modaltitle="Job Details"]')
+                    ? node
+                    : node.querySelector('.air3-slider-content[modaltitle="Job Details"]');
+
+                if (slider) {
+                    handleSliderOpen(slider);
+                    return;
+                }
+            }
+
+            // 检查是否有 slider 被移除
+            for (const node of mutation.removedNodes) {
+                if (!(node instanceof Element)) continue;
+
+                const wasSlider = node.matches('.air3-slider-content[modaltitle="Job Details"]')
+                    || node.querySelector('.air3-slider-content[modaltitle="Job Details"]');
+
+                if (wasSlider && isSliderOpen) {
+                    handleSliderClose();
+                    return;
+                }
+            }
         }
     });
 
-    observer.observe(document.body, observerConfig);
-    Logger.log("Observer已启动");
+    sliderObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    Logger.log("Slider Observer 已启动");
+
+    // 检查当前是否已有 slider
+    const existingSlider = document.querySelector('.air3-slider-content[modaltitle="Job Details"]');
+    if (existingSlider) {
+        handleSliderOpen(existingSlider);
+    }
 }
 
 // 初始化函数
@@ -463,8 +489,7 @@ function init() {
     Logger.log("Upwork Monitor 初始化");
     // 确保初始状态正确
     isSliderOpen = false;
-    createObserver();
-    checkForSlider();
+    createSliderObserver();
 }
 
 // 页面加载完成后初始化
@@ -482,10 +507,14 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// 确保在页面卸载时清理observer
+// 确保在页面卸载时清理 observer
 window.addEventListener('unload', () => {
-    if (observer) {
-        observer.disconnect();
-        observer = null;
+    if (sliderObserver) {
+        sliderObserver.disconnect();
+        sliderObserver = null;
+    }
+    if (dataObserver) {
+        dataObserver.disconnect();
+        dataObserver = null;
     }
 });
