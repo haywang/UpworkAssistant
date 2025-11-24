@@ -1,6 +1,6 @@
 import type { PlasmoCSConfig } from "plasmo"
-import { Storage } from "@plasmohq/storage"
 import { Logger } from "./utils/logger"
+import { getLanguageResources } from "./i18n"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.upwork.com/*"],
@@ -10,7 +10,6 @@ export const config: PlasmoCSConfig = {
 let sliderObserver: MutationObserver | null = null;  // 第一层：监听 slider 出现
 let dataObserver: MutationObserver | null = null;    // 第二层：监听 slider 内数据加载
 let isSliderOpen = false;
-const storage = new Storage();
 
 // 数据加载超时时间（毫秒）
 const DATA_LOAD_TIMEOUT = 5000;
@@ -56,14 +55,252 @@ const i18n = {
       title: "Upwork Assistant",
       body: "New job details opened!"
     }
+  },
+  // 第一优先级语言
+  es: {
+    budget: "Presupuesto",
+    proposals: "Propuestas",
+    totalProposals: "Total",
+    interviewing: "Entrevistando",
+    invitesSent: "Invitaciones enviadas",
+    unansweredInvites: "Invitaciones sin respuesta",
+    connectsRequired: "Connects",
+    hires: "Contratos",
+    clientInfo: "Información del cliente",
+    totalSpent: "Total gastado",
+    hireRate: "Tasa de contratación",
+    lastViewed: "Última vista",
+    hourly: "hora",
+    unknown: "Desconocido",
+    notification: {
+      title: "Upwork Assistant",
+      body: "¡Nuevos detalles del trabajo abiertos!"
+    }
+  },
+  hi: {
+    budget: "बजट",
+    proposals: "प्रस्ताव",
+    totalProposals: "कुल",
+    interviewing: "साक्षार्कार",
+    invitesSent: "निमंत्रण भेजे गए",
+    unansweredInvites: "उत्तर न दिए गए निमंत्रण",
+    connectsRequired: "Connects",
+    hires: "नियुक्तियाँ",
+    clientInfo: "ग्राहक जानकारी",
+    totalSpent: "कुल खर्च",
+    hireRate: "नियुक्ति दर",
+    lastViewed: "अंतिम दृश्य",
+    hourly: "घंटा",
+    unknown: "अज्ञात",
+    notification: {
+      title: "Upwork Assistant",
+      body: "नए कार्य विवरण खोले गए!"
+    }
+  },
+  pt: {
+    budget: "Orçamento",
+    proposals: "Propostas",
+    totalProposals: "Total",
+    interviewing: "Entrevistando",
+    invitesSent: "Convites enviados",
+    unansweredInvites: "Convites não respondidos",
+    connectsRequired: "Connects",
+    hires: "Contratações",
+    clientInfo: "Informações do cliente",
+    totalSpent: "Total gasto",
+    hireRate: "Taxa de contratação",
+    lastViewed: "Última visualização",
+    hourly: "hora",
+    unknown: "Desconhecido",
+    notification: {
+      title: "Upwork Assistant",
+      body: "Novos detalhes do trabalho abertos!"
+    }
+  },
+  bn: {
+    budget: "বাজেট",
+    proposals: "প্রস্তাব",
+    totalProposals: "মোট",
+    interviewing: "সাক্ষাৎকার",
+    invitesSent: "আমন্ত্রণ পাঠানো হয়েছে",
+    unansweredInvites: "উত্তরহীন আমন্ত্রণ",
+    connectsRequired: "Connects",
+    hires: "নিয়োগ",
+    clientInfo: "ক্লায়েন্ট তথ্য",
+    totalSpent: "মোট ব্যয়",
+    hireRate: "নিয়োগের হার",
+    lastViewed: "সর্বশেষ দেখা",
+    hourly: "ঘন্টা",
+    unknown: "অজানা",
+    notification: {
+      title: "Upwork Assistant",
+      body: "নতুন কাজের বিবরণ খোলা হয়েছে!"
+    }
+  },
+  // 第二优先级语言
+  uk: {
+    budget: "Бюджет",
+    proposals: "Пропозиції",
+    totalProposals: "Всього",
+    interviewing: "Співбесіда",
+    invitesSent: "Запрошення надіслано",
+    unansweredInvites: "Запрошення без відповіді",
+    connectsRequired: "Connects",
+    hires: "Найми",
+    clientInfo: "Інформація про клієнта",
+    totalSpent: "Загальна сума",
+    hireRate: "Рівень найму",
+    lastViewed: "Останній перегляд",
+    hourly: "година",
+    unknown: "Невідомо",
+    notification: {
+      title: "Upwork Assistant",
+      body: "Нові деталі роботи відкрито!"
+    }
+  },
+  tl: {
+    budget: "Badyet",
+    proposals: "Mga panukla",
+    totalProposals: "Kabuuan",
+    interviewing: "Panayam",
+    invitesSent: "Mga imbitasyon na ipinadala",
+    unansweredInvites: "Mga imbitasyon walang sagot",
+    connectsRequired: "Connects",
+    hires: "Mga hire",
+    clientInfo: "Impormasyon ng kliyente",
+    totalSpent: "Kabuuang gastusin",
+    hireRate: "Rate ng pag-hire",
+    lastViewed: "Huling tingin",
+    hourly: "oras",
+    unknown: "Hindi alam",
+    notification: {
+      title: "Upwork Assistant",
+      body: "Mga bagong detalye ng trabaho ay binuksan!"
+    }
+  },
+  ru: {
+    budget: "Бюджет",
+    proposals: "Предложения",
+    totalProposals: "Всего",
+    interviewing: "Собеседование",
+    invitesSent: "Приглашения отправлены",
+    unansweredInvites: "Приглашения без ответа",
+    connectsRequired: "Connects",
+    hires: "Наймы",
+    clientInfo: "Информация о клиенте",
+    totalSpent: "Всего потрачено",
+    hireRate: "Рейтинг найма",
+    lastViewed: "Последний просмотр",
+    hourly: "час",
+    unknown: "Неизвестно",
+    notification: {
+      title: "Upwork Assistant",
+      body: "Новые детали работы открыты!"
+    }
+  },
+  ar: {
+    budget: "الميزانية",
+    proposals: "الاقتراحات",
+    totalProposals: "المجموع",
+    interviewing: "المقابلة",
+    invitesSent: "الدعوات المرسلة",
+    unansweredInvites: "الدعوات без ответа",
+    connectsRequired: "Connects",
+    hires: "التوظيف",
+    clientInfo: "معلومات العميل",
+    totalSpent: "إجمالي الإنفاق",
+    hireRate: "معدل التوظيف",
+    lastViewed: "آخر مشاهدة",
+    hourly: "ساعة",
+    unknown: "غير معروف",
+    notification: {
+      title: "Upwork Assistant",
+      body: "تم فتح تفاصيل وظيفة جديدة!"
+    }
+  },
+  // 第三优先级语言
+  ja: {
+    budget: "予算",
+    proposals: "提案",
+    totalProposals: "合計",
+    interviewing: "面接中",
+    invitesSent: "招待送信済み",
+    unansweredInvites: "未返信の招待",
+    connectsRequired: "Connects",
+    hires: "採用",
+    clientInfo: "クライアント情報",
+    totalSpent: "総支出額",
+    hireRate: "採用率",
+    lastViewed: "最終閲覧",
+    hourly: "時間",
+    unknown: "不明",
+    notification: {
+      title: "Upwork Assistant",
+      body: "新しい仕事詳細が開かれました！"
+    }
+  },
+  ko: {
+    budget: "예산",
+    proposals: "제안",
+    totalProposals: "총계",
+    interviewing: "면접 중",
+    invitesSent: "초대장 전송됨",
+    unansweredInvites: "답변 없는 초대",
+    connectsRequired: "Connects",
+    hires: "채용",
+    clientInfo: "클라이언트 정보",
+    totalSpent: "총 지출액",
+    hireRate: "채용률",
+    lastViewed: "마지막 조회",
+    hourly: "시간",
+    unknown: "알 수 없음",
+    notification: {
+      title: "Upwork Assistant",
+      body: "새로운 작업 세부 정보가 열렸습니다!"
+    }
+  },
+  de: {
+    budget: "Budget",
+    proposals: "Vorschläge",
+    totalProposals: "Gesamt",
+    interviewing: "Im Gespräch",
+    invitesSent: "Einladungen gesendet",
+    unansweredInvites: "Unbeantwortete Einladungen",
+    connectsRequired: "Connects",
+    hires: "Einstellungen",
+    clientInfo: "Kundeninformationen",
+    totalSpent: "Gesamtausgaben",
+    hireRate: "Einstellungsrate",
+    lastViewed: "Zuletzt angesehen",
+    hourly: "Stunde",
+    unknown: "Unbekannt",
+    notification: {
+      title: "Upwork Assistant",
+      body: "Neue Job-Details geöffnet!"
+    }
+  },
+  fr: {
+    budget: "Budget",
+    proposals: "Propositions",
+    totalProposals: "Total",
+    interviewing: "Entretien",
+    invitesSent: "Invitations envoyées",
+    unansweredInvites: "Invitations sans réponse",
+    connectsRequired: "Connects",
+    hires: "Embauches",
+    clientInfo: "Informations client",
+    totalSpent: "Dépenses totales",
+    hireRate: "Taux d'embauche",
+    lastViewed: "Dernière consultation",
+    hourly: "heure",
+    unknown: "Inconnu",
+    notification: {
+      title: "Upwork Assistant",
+      body: "Nouveaux détails de l'emploi ouverts!"
+    }
   }
 };
 
-// 获取当前语言
-async function getCurrentLanguage(): Promise<"zh" | "en"> {
-  const lang = await storage.get("upwork-language");
-  return lang || lang === "zh" ? "zh" : "en";
-}
 
 // 创建信息卡片
 async function createInfoCard(container: Element) {
@@ -73,8 +310,8 @@ async function createInfoCard(container: Element) {
         return;
     }
 
-    const lang = await getCurrentLanguage();
-    const t = i18n[lang];
+    // 获取当前语言资源
+    const t = await getLanguageResources();
 
     // 解析预算信息
     let budget = t.unknown;

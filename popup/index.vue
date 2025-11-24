@@ -4,10 +4,22 @@
     <h2>Upwork Assistant</h2>
 
     <div class="language-selector">
-      <label>Language / 语言</label>
+      <label>Language / 语言 / Idioma / भाषा / Língua / ভাষা</label>
       <select v-model="language" @change="handleLanguageChange">
-        <option value="zh">中文</option>
         <option value="en">English</option>
+        <option value="zh">中文</option>
+        <option value="es">Español</option>
+        <option value="hi">हिन्दी</option>
+        <option value="pt">Português</option>
+        <option value="bn">বাংলা</option>
+        <option value="uk">Українська</option>
+        <option value="tl">Filipino</option>
+        <option value="ru">Русский</option>
+        <option value="ar">العربية</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
       </select>
     </div>
   </div>
@@ -15,28 +27,25 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Storage } from "@plasmohq/storage"
+import { getCurrentLanguage, setLanguage } from "../contents/i18n"
 
-const storage = new Storage()
-// default is en
 const language = ref('en')
 
 onMounted(async () => {
   // 获取保存的语言设置
-  const savedLanguage = await storage.get('upwork-language')
-  language.value = savedLanguage || 'en'
+  language.value = await getCurrentLanguage()
 })
 
 const handleLanguageChange = async () => {
   // 保存语言设置
-  await storage.set('upwork-language', language.value)
+  await setLanguage(language.value as any)
 }
 </script>
 
 <style>
 .popup-container {
   padding: 16px;
-  width: 200px;
+  width: 250px;
 }
 
 h2 {
