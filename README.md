@@ -112,12 +112,4 @@ Upwork Assistant 是一款专为 Upwork 自由职业者设计的浏览器扩展�
 
 ---
 
-### 🌟 用户评价
-
-"这个扩展让我筛选工作变得如此简单！" - John D.
-
-"信息一目了然，帮我节省了大量时间。" - Sarah M.
-
----
-
 Made with ❤️ for Upwork Freelancers

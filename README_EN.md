@@ -113,12 +113,4 @@ This extension was born from a deep understanding of freelancers' needs for work
 
 ---
 
-### 🌟 User Reviews
-
-"This extension makes job screening so simple!" - John D.
-
-"Information at a glance, saves me tons of time." - Sarah M.
-
----
-
 Made with ❤️ for Upwork Freelancers
